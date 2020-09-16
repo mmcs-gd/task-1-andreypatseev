@@ -3,7 +3,7 @@ const canvas = document.getElementById("cnvs");
 const gameState = {};
 
 const background = new Image();
-background.src = 'background.jpeg';
+background.src = 'background.jpg';
 
 /**
  * 	Events
