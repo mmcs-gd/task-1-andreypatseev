@@ -3,7 +3,7 @@ const canvas = document.getElementById("cnvs");
 const gameState = {};
 
 const background = new Image();
-background.src = 'http://4.bp.blogspot.com/-pcmvliEFJ74/UeqpmQgWtKI/AAAAAAAAF0k/tGEZ35HTAPs/s1600/Space%2BBackground%2BImages-735961.jpg';
+background.src = 'background.jpeg';
 
 /**
  * 	Events
@@ -68,7 +68,7 @@ const update = (tick) => {
 
 	// Bonus
 	const bonus = gameState.bonus
-	const shouldCreateBonus = (gameState.lastTick - bonus.lastInstance) > 5000 && !bonus.isCreated;
+	const shouldCreateBonus = (gameState.lastTick - bonus.lastInstance) > 5000 && !bonus.isActive;
 	
 	// create bonus in random place every 15 seconds
 	if (shouldCreateBonus) {
@@ -76,7 +76,7 @@ const update = (tick) => {
 		gameState.bonus = {
 			...gameState.bonus,
 			...generateNewBonus(gameState.width, gameState.height),
-			isCreated: true,
+			isActive: true,
 			lastInstance: gameState.lastTick,
 		}
 		console.log(gameState.bonus)
@@ -163,17 +163,14 @@ const drawScore = (context) => {
 }
 
 const drawBonus = (context) => {
-	if (gameState.bonus.isCreated) {
-		const {x, y, radius} = gameState.bonus;
-
-		const width = radius / 4;
-
+	const {x, y, radius, width, isActive} = gameState.bonus;
+	if (isActive) {
 		context.beginPath();
-		context.rect(x - radius, y - width, radius * 2, width);
-		context.rect(x - width, y - radius, width, 2 * radius)
+		context.rect(x - radius, y - width / 2, 2 * radius, width);
+		context.rect(x - width / 2, y - radius, width, 2 * radius);
 		context.fillStyle = generateRandomColor();
 		context.fill();
-		context.closePath();		
+		context.closePath();	
 	}
 }
 
@@ -223,7 +220,7 @@ const checkWallCollision = (obj, callback) => {
  */
 
 const updateBonus = () => {
-	if (gameState.bonus.isCreated) {
+	if (gameState.bonus.isActive) {
 		bonus = gameState.bonus;
 		
 		bonus.y += bonus.vy;
@@ -243,7 +240,7 @@ const updateBonus = () => {
 		) { 
 			gameState.score.value += 15;
 			gameState.player.color = generateRandomColor();
-			bonus.isCreated = false;
+			bonus.isActive = false;
 		}
 		
 		checkWallCollision(bonus, () => {
@@ -251,7 +248,7 @@ const updateBonus = () => {
 		});
 		
 		checkBottomCollision(bonus, () => {
-			gameState.bonus.isCreated = false;
+			gameState.bonus.isActive = false;
 		});
 	}
 }
@@ -305,6 +302,7 @@ const generateNewBonus = (gameWidth, gameHeight) => {
 		radius,
 		x: generateRandomInt(0 + radius, gameWidth - radius),
 		y: generateRandomInt(0 + radius, gameHeight / 3),
+		width: generateRandomInt(5, 10),
 		vx: generateRandomInt(-10, 10),
 		vy: generateRandomInt(5, 10), 
 	};
@@ -379,8 +377,9 @@ const setup = () => {
 		radius: 0,
 		vx: 0,
 		vy: 0,
+		width: 0,
 		lastInstance: 0,
-		isCreated: false,
+		isActive: false,
 	}
 }
 
